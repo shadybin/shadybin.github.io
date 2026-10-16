@@ -78,6 +78,23 @@
     code { font-family: var(--mono); font-size: 0.9em; }
     p code { background: #f0eee6; padding: 0.1em 0.35em; border-radius: 5px; }
 
+
+    .tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0 0 1rem; }
+    .tabs button { font: 600 0.88rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Helvetica, Arial, sans-serif; color: var(--muted); background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 0.55rem 0.95rem; cursor: pointer; }
+    .tabs button:hover { color: var(--ink); border-color: #cfcabd; }
+    .tabs button[aria-selected="true"] { background: var(--green); border-color: var(--green); color: #fff; }
+    .tabs button:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+    pre.code { background: #fcfbf7; padding: 1.2rem 1.3rem; font-size: 0.85rem; line-height: 1.65; tab-size: 4; }
+    /* Pygments tokens, in a light theme of the site's own colours. */
+    .code .c, .code .c1, .code .cm, .code .cs, .code .ch { color: #8a8f84; font-style: italic; }
+    .code .k, .code .kd, .code .kn, .code .kr, .code .kc, .code .kp, .code .ow { color: #9a3412; font-weight: 600; }
+    .code .kt, .code .nc, .code .nn { color: #6d28d9; }
+    .code .s, .code .s1, .code .s2, .code .sa, .code .sb, .code .se, .code .si, .code .dl { color: #15803d; }
+    .code .nf, .code .fm, .code .nb, .code .bp { color: #1d4ed8; }
+    .code .m, .code .mi, .code .mf, .code .mh { color: #b45309; }
+    .code .o, .code .p { color: #5c6157; }
+    .code .na, .code .nd, .code .nl { color: #0e7490; }
+    .code .err { color: inherit; background: none; }
     footer { border-top: 1px solid var(--line); padding: 2rem 0 3rem; color: var(--muted); font-size: 0.9rem; }
     footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; }
     footer a { color: var(--muted); }
@@ -151,24 +168,91 @@
     </section>
 
     <section>
-      <div class="wrap split">
-        <div>
-          <h2>Updaters that only install certified releases</h2>
-          <p>An updater that checks the registry before installing only ever updates to certified releases. There are small SDKs for Go, Zig and Rust. Each has shadybin's key built in and passes the same conformance tests.</p>
-          <p><a href="https://github.com/shadybin/shadybin#readme">SDKs and CLI on GitHub</a></p>
+      <div class="wrap">
+        <h2>Updaters that only install certified releases</h2>
+        <p class="lede">An updater that checks the registry before installing only ever updates to certified releases. There are small SDKs for Go, Rust, Zig, Python and TypeScript (and JavaScript). Each has shadybin's key built in and passes the same conformance tests. <a href="https://github.com/shadybin/shadybin#readme">SDKs and CLI on GitHub</a></p>
+        <div class="tabs" role="tablist" aria-label="SDK language">
+          <button type="button" role="tab" id="tab-go" aria-controls="code-go" aria-selected="true">Go</button>
+          <button type="button" role="tab" id="tab-rust" aria-controls="code-rust" aria-selected="false" tabindex="-1">Rust</button>
+          <button type="button" role="tab" id="tab-zig" aria-controls="code-zig" aria-selected="false" tabindex="-1">Zig</button>
+          <button type="button" role="tab" id="tab-python" aria-controls="code-python" aria-selected="false" tabindex="-1">Python</button>
+          <button type="button" role="tab" id="tab-typescript" aria-controls="code-typescript" aria-selected="false" tabindex="-1">TypeScript</button>
         </div>
-        <pre><code>c := verify.Checker{}
-sum := sha256.Sum256(archive)
-err := c.Check(ctx, "github.com/acme/tool",
-  tag, "tool_Linux_x86_64.tar.gz", sum)
-switch {
-case err == nil:
-  // certified: install it
-case errors.Is(err, verify.ErrPending):
-  // not yet: wait, and ask again
-default:
-  // not certified: don't install
-}</code></pre>
+        <pre class="code" role="tabpanel" id="code-go" aria-labelledby="tab-go"><code><span class="kn">import</span><span class="w"> </span><span class="s">"github.com/shadybin/shadybin/verify"</span>
+
+<span class="nx">c</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">verify</span><span class="p">.</span><span class="nx">Checker</span><span class="p">{}</span><span class="w"> </span><span class="c1">// trusts shadybin's own key</span>
+<span class="nx">sum</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">sha256</span><span class="p">.</span><span class="nx">Sum256</span><span class="p">(</span><span class="nx">archive</span><span class="p">)</span>
+<span class="nx">err</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">c</span><span class="p">.</span><span class="nx">Check</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span><span class="w"> </span><span class="s">"github.com/acme/tool"</span><span class="p">,</span><span class="w"> </span><span class="nx">tag</span><span class="p">,</span><span class="w"> </span><span class="s">"tool_Linux_x86_64.tar.gz"</span><span class="p">,</span><span class="w"> </span><span class="nx">sum</span><span class="p">)</span>
+<span class="k">switch</span><span class="w"> </span><span class="p">{</span>
+<span class="k">case</span><span class="w"> </span><span class="nx">err</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">nil</span><span class="p">:</span>
+<span class="w">	</span><span class="c1">// certified: install it</span>
+<span class="k">case</span><span class="w"> </span><span class="nx">errors</span><span class="p">.</span><span class="nx">Is</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span><span class="w"> </span><span class="nx">verify</span><span class="p">.</span><span class="nx">ErrPending</span><span class="p">):</span>
+<span class="w">	</span><span class="c1">// not certified yet: wait, and ask again</span>
+<span class="k">default</span><span class="p">:</span>
+<span class="w">	</span><span class="c1">// not certified: don't install</span>
+<span class="p">}</span>
+</code></pre>
+        <pre class="code" role="tabpanel" id="code-rust" aria-labelledby="tab-rust" hidden><code><span class="k">use</span><span class="w"> </span><span class="n">shadybin_verify</span><span class="p">::{</span>
+<span class="w">    </span><span class="n">verify</span><span class="p">,</span><span class="w"> </span><span class="n">default_keys</span><span class="p">,</span><span class="w"> </span><span class="n">statement_url</span><span class="p">,</span><span class="w"> </span><span class="n">signature_url</span><span class="p">,</span><span class="w"> </span><span class="n">DEFAULT_REGISTRY</span><span class="p">,</span><span class="w"> </span><span class="n">Error</span><span class="p">,</span>
+<span class="p">};</span>
+
+<span class="c1">// Fetch with the HTTP client you already have; a 404 means not certified yet.</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">statement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fetch</span><span class="p">(</span><span class="o">&amp;</span><span class="n">statement_url</span><span class="p">(</span><span class="n">DEFAULT_REGISTRY</span><span class="p">,</span><span class="w"> </span><span class="n">repo</span><span class="p">,</span><span class="w"> </span><span class="n">tag</span><span class="p">))</span><span class="o">?</span><span class="p">;</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">signature</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fetch</span><span class="p">(</span><span class="o">&amp;</span><span class="n">signature_url</span><span class="p">(</span><span class="n">DEFAULT_REGISTRY</span><span class="p">,</span><span class="w"> </span><span class="n">repo</span><span class="p">,</span><span class="w"> </span><span class="n">tag</span><span class="p">))</span><span class="o">?</span><span class="p">;</span>
+
+<span class="kd">let</span><span class="w"> </span><span class="p">(</span><span class="n">keys</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">default_keys</span><span class="p">(),</span><span class="w"> </span><span class="s">"tool_Linux_x86_64.tar.gz"</span><span class="p">);</span>
+<span class="k">match</span><span class="w"> </span><span class="n">verify</span><span class="p">(</span><span class="o">&amp;</span><span class="n">statement</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">signature</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">keys</span><span class="p">,</span><span class="w"> </span><span class="n">repo</span><span class="p">,</span><span class="w"> </span><span class="n">tag</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">digest</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nb">Ok</span><span class="p">(())</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">install</span><span class="p">(),</span>
+<span class="w">    </span><span class="nb">Err</span><span class="p">(</span><span class="n">Error</span><span class="p">::</span><span class="n">Rejected</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w"> </span><span class="c1">// reviewed and refused: never install it</span>
+<span class="w">    </span><span class="nb">Err</span><span class="p">(</span><span class="n">_</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">               </span><span class="c1">// not certified: don't install</span>
+<span class="p">}</span>
+</code></pre>
+        <pre class="code" role="tabpanel" id="code-zig" aria-labelledby="tab-zig" hidden><code><span class="kr">const</span><span class="w"> </span><span class="n">shadybin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">@import</span><span class="p">(</span><span class="s">"shadybin"</span><span class="p">);</span>
+
+<span class="c1">// statement and signature: the bytes at shadybin.statementUrl and signatureUrl.</span>
+<span class="c1">// A 404 means not certified yet.</span>
+<span class="kr">const</span><span class="w"> </span><span class="n">keys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">shadybin</span><span class="p">.</span><span class="n">defaultKeys</span><span class="p">();</span>
+<span class="kr">const</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"tool-x86_64-linux"</span><span class="p">;</span>
+<span class="n">shadybin</span><span class="p">.</span><span class="n">verify</span><span class="p">(</span><span class="n">statement</span><span class="p">,</span><span class="w"> </span><span class="n">signature</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">keys</span><span class="p">,</span><span class="w"> </span><span class="n">repo</span><span class="p">,</span><span class="w"> </span><span class="n">tag</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="n">digest</span><span class="p">)</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="o">|</span><span class="n">err</span><span class="o">|</span><span class="w"> </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">error</span><span class="p">.</span><span class="n">Rejected</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="k">return</span><span class="p">,</span><span class="w"> </span><span class="c1">// reviewed and refused: never install it</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="k">return</span><span class="p">,</span><span class="w"> </span><span class="c1">// not certified: don't install</span>
+<span class="p">};</span>
+<span class="k">try</span><span class="w"> </span><span class="n">install</span><span class="p">();</span>
+</code></pre>
+        <pre class="code" role="tabpanel" id="code-python" aria-labelledby="tab-python" hidden><code><span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shadybin_verify</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sb</span>
+
+<span class="c1"># Fetch with the HTTP client you already have; a 404 means not certified yet.</span>
+<span class="n">statement</span> <span class="o">=</span> <span class="n">fetch</span><span class="p">(</span><span class="n">sb</span><span class="o">.</span><span class="n">statement_url</span><span class="p">(</span><span class="n">sb</span><span class="o">.</span><span class="n">DEFAULT_REGISTRY</span><span class="p">,</span> <span class="n">repo</span><span class="p">,</span> <span class="n">tag</span><span class="p">))</span>
+<span class="n">signature</span> <span class="o">=</span> <span class="n">fetch</span><span class="p">(</span><span class="n">sb</span><span class="o">.</span><span class="n">signature_url</span><span class="p">(</span><span class="n">sb</span><span class="o">.</span><span class="n">DEFAULT_REGISTRY</span><span class="p">,</span> <span class="n">repo</span><span class="p">,</span> <span class="n">tag</span><span class="p">))</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">sb</span><span class="o">.</span><span class="n">verify</span><span class="p">(</span><span class="n">statement</span><span class="p">,</span> <span class="n">signature</span><span class="p">,</span> <span class="n">sb</span><span class="o">.</span><span class="n">default_keys</span><span class="p">(),</span> <span class="n">repo</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span>
+              <span class="s2">"tool_Linux_x86_64.tar.gz"</span><span class="p">,</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">archive</span><span class="p">)</span><span class="o">.</span><span class="n">digest</span><span class="p">())</span>
+    <span class="n">install</span><span class="p">()</span>
+<span class="k">except</span> <span class="n">sb</span><span class="o">.</span><span class="n">Rejected</span><span class="p">:</span>
+    <span class="k">pass</span>  <span class="c1"># reviewed and refused: never install it</span>
+<span class="k">except</span> <span class="n">sb</span><span class="o">.</span><span class="n">Error</span><span class="p">:</span>
+    <span class="k">pass</span>  <span class="c1"># not certified: don't install</span>
+</code></pre>
+        <pre class="code" role="tabpanel" id="code-typescript" aria-labelledby="tab-typescript" hidden><code><span class="k">import</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">verify</span><span class="p">,</span><span class="w"> </span><span class="nx">defaultKeys</span><span class="p">,</span><span class="w"> </span><span class="nx">statementUrl</span><span class="p">,</span><span class="w"> </span><span class="nx">signatureUrl</span><span class="p">,</span><span class="w"> </span><span class="nx">DEFAULT_REGISTRY</span><span class="p">,</span><span class="w"> </span><span class="nx">Rejected</span><span class="p">,</span>
+<span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"@shadybin/verify"</span><span class="p">;</span>
+
+<span class="c1">// Fetch with the client you already have; a 404 means not certified yet.</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">statement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">fetchBytes</span><span class="p">(</span><span class="nx">statementUrl</span><span class="p">(</span><span class="nx">DEFAULT_REGISTRY</span><span class="p">,</span><span class="w"> </span><span class="nx">repo</span><span class="p">,</span><span class="w"> </span><span class="nx">tag</span><span class="p">));</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">signature</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">fetchBytes</span><span class="p">(</span><span class="nx">signatureUrl</span><span class="p">(</span><span class="nx">DEFAULT_REGISTRY</span><span class="p">,</span><span class="w"> </span><span class="nx">repo</span><span class="p">,</span><span class="w"> </span><span class="nx">tag</span><span class="p">));</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">digest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Uint8Array</span><span class="p">(</span><span class="k">await</span><span class="w"> </span><span class="nx">crypto</span><span class="p">.</span><span class="nx">subtle</span><span class="p">.</span><span class="nx">digest</span><span class="p">(</span><span class="s2">"SHA-256"</span><span class="p">,</span><span class="w"> </span><span class="nx">archive</span><span class="p">));</span>
+
+<span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">verify</span><span class="p">(</span><span class="nx">statement</span><span class="p">,</span><span class="w"> </span><span class="nx">signature</span><span class="p">,</span><span class="w"> </span><span class="nx">defaultKeys</span><span class="p">(),</span><span class="w"> </span><span class="nx">repo</span><span class="p">,</span><span class="w"> </span><span class="nx">tag</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"tool_Linux_x86_64.tar.gz"</span><span class="p">,</span><span class="w"> </span><span class="nx">digest</span><span class="p">);</span>
+<span class="w">  </span><span class="nx">install</span><span class="p">();</span>
+<span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="nx">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">e</span><span class="w"> </span><span class="ow">instanceof</span><span class="w"> </span><span class="nx">Rejected</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* reviewed and refused: never install it */</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* not certified: don't install */</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre>
       </div>
     </section>
   </main>
@@ -179,5 +263,25 @@ default:
       <span><a href="/registry/">Registry</a> · <a href="/review-prompt/">Review prompt</a> · <a href="https://github.com/shadybin/shadybin/blob/main/spec/SPEC.md">Spec</a> · <a href="https://github.com/shadybin/shadybin">GitHub</a></span>
     </div>
   </footer>
+
+  <script>
+    // The language pills: one example shown at a time; arrow keys move between them.
+    const tabs = [...document.querySelectorAll('.tabs [role="tab"]')];
+    const select = (tab) => {
+      for (const t of tabs) {
+        const on = t === tab;
+        t.setAttribute("aria-selected", on);
+        t.tabIndex = on ? 0 : -1;
+        document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
+      }
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener("click", () => select(t));
+      t.addEventListener("keydown", (e) => {
+        const next = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+        if (next) { const n = tabs[(i + next + tabs.length) % tabs.length]; select(n); n.focus(); }
+      });
+    });
+  </script>
 </body>
 </html>
