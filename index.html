@@ -3,17 +3,180 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>shadybin</title>
+  <meta name="color-scheme" content="light">
+  <title>shadybin: no shady code in this release</title>
+  <meta name="description" content="shadybin rebuilds a release from its source, checks it is what was published, has Claude review the code that goes in, and signs the verdict in a public registry.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2314532d'/%3E%3Cpath d='M18 33l9 9 19-20' fill='none' stroke='%23fff' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <style>
-    body { font: 16px/1.6 ui-sans-serif, system-ui, sans-serif; max-width: 40rem; margin: 4rem auto; padding: 0 1rem; color: #222; }
-    code { font: 0.9em ui-monospace, monospace; background: #f3f3f3; padding: 0.1em 0.3em; border-radius: 3px; }
-    @media (prefers-color-scheme: dark) { body { background: #141414; color: #ddd; } code { background: #262626; } }
+    :root {
+      --ink: #1c1f1a;
+      --muted: #5c6157;
+      --paper: #fbfaf6;
+      --card: #ffffff;
+      --line: #e6e3da;
+      --green: #14532d;
+      --green-soft: #e8f3ea;
+      --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    html { background: var(--paper); }
+    body {
+      margin: 0; color: var(--ink);
+      font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--green); text-underline-offset: 3px; }
+    .wrap { max-width: 56rem; margin: 0 auto; padding: 0 1.5rem; }
+
+    header { padding: 1.5rem 0; }
+    header .wrap { display: flex; align-items: center; justify-content: space-between; }
+    .wordmark { font: 600 1.15rem/1 var(--mono); color: var(--ink); text-decoration: none; letter-spacing: -0.01em; }
+    .wordmark span { color: var(--green); }
+    nav a { color: var(--muted); text-decoration: none; margin-left: 1.5rem; font-size: 0.95rem; }
+    nav a:hover { color: var(--ink); }
+
+    .hero { padding: 4.5rem 1.5rem 3.5rem; }
+    .hero h1 { font-size: clamp(2.3rem, 5.5vw, 3.6rem); line-height: 1.08; letter-spacing: -0.035em; margin: 0 0 1.25rem; max-width: 14ch; }
+    .hero p { font-size: 1.2rem; color: var(--muted); max-width: 38rem; margin: 0 0 2rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+    .button { display: inline-block; padding: 0.7rem 1.15rem; border-radius: 10px; font-weight: 600; font-size: 0.98rem; text-decoration: none; }
+    .button.primary { background: var(--green); color: #fff; }
+    .button.primary:hover { background: #0f4224; }
+    .button.secondary { background: var(--card); color: var(--ink); border: 1px solid var(--line); }
+    .button.secondary:hover { border-color: #cfcabd; }
+
+    .badges { margin-top: 2.75rem; display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; color: var(--muted); font-size: 0.9rem; }
+    .badges figure { margin: 0; display: flex; align-items: center; gap: 0.6rem; }
+    .badges img { height: 20px; }
+
+    section { padding: 3.5rem 0; border-top: 1px solid var(--line); }
+    h2 { font-size: 1.6rem; letter-spacing: -0.02em; margin: 0 0 0.5rem; }
+    .lede { color: var(--muted); margin: 0 0 2rem; max-width: 40rem; }
+
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem; counter-reset: step; }
+    .step { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 1.4rem 1.4rem 1.2rem; }
+    .step::before { counter-increment: step; content: counter(step); display: inline-grid; place-items: center; width: 1.9rem; height: 1.9rem; border-radius: 50%; background: var(--green-soft); color: var(--green); font-weight: 700; font-size: 0.95rem; margin-bottom: 0.9rem; }
+    .step h3 { margin: 0 0 0.4rem; font-size: 1.1rem; }
+    .step p { margin: 0; color: var(--muted); font-size: 0.97rem; }
+
+    .split { display: grid; grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); gap: 2.5rem; align-items: start; }
+    .split h3 { margin: 0 0 0.4rem; font-size: 1.1rem; }
+    .split p { margin: 0 0 0.8rem; color: var(--muted); }
+
+    table { border-collapse: collapse; width: 100%; font-size: 0.95rem; background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+    td { padding: 0.7rem 1rem; border-top: 1px solid var(--line); vertical-align: middle; }
+    tr:first-child td { border-top: 0; }
+    td:first-child { color: var(--muted); width: 55%; }
+    .pill { display: inline-block; font: 600 0.8rem/1 var(--mono); padding: 0.35rem 0.55rem; border-radius: 6px; white-space: nowrap; }
+    .pill.green { background: #dcfce7; color: #14532d; }
+    .pill.red { background: #fee2e2; color: #991b1b; }
+    .pill.grey { background: #ececeb; color: #4b4b48; }
+    .pill.orange { background: #ffedd5; color: #9a3412; }
+
+    pre { background: #f3f1ea; border: 1px solid var(--line); border-radius: 12px; padding: 1rem 1.1rem; overflow-x: auto; font: 0.86rem/1.55 var(--mono); margin: 0; }
+    code { font-family: var(--mono); font-size: 0.9em; }
+    p code { background: #f0eee6; padding: 0.1em 0.35em; border-radius: 5px; }
+
+    footer { border-top: 1px solid var(--line); padding: 2rem 0 3rem; color: var(--muted); font-size: 0.9rem; }
+    footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; }
+    footer a { color: var(--muted); }
   </style>
 </head>
 <body>
-  <h1>shadybin</h1>
-  <p>shadybin rebuilds a release from its tagged source, checks the result is byte for byte the binary the vendor published, and has Claude review the code compiled into it. Only then is it certified, by a fixed rule with no person involved.</p>
-  <p>Updaters that use the shadybin SDK install only certified releases. Every certification is a signed, public commit in the <a href="https://github.com/shadybin/registry">registry</a>.</p>
-  <p><a href="https://github.com/shadybin/shadybin">github.com/shadybin/shadybin</a></p>
+  <header>
+    <div class="wrap">
+      <a class="wordmark" href="/">shady<span>bin</span></a>
+      <nav>
+        <a href="https://github.com/shadybin/registry">Registry</a>
+        <a href="https://github.com/shadybin/shadybin/blob/main/spec/SPEC.md">Spec</a>
+        <a href="https://github.com/shadybin/shadybin">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap hero">
+      <h1>No shady code in this release.</h1>
+      <p>shadybin rebuilds a release from its source and checks it is exactly what was published. Claude then reviews the code that goes into it. The verdict is signed in a public registry, and shows on the project's README as a badge.</p>
+      <div class="actions">
+        <a class="button primary" href="https://github.com/shadybin/registry#adding-a-project">Certify your releases</a>
+        <a class="button secondary" href="https://github.com/shadybin/shadybin/blob/main/spec/SPEC.md">How it works, in full</a>
+      </div>
+      <div class="badges">
+        <figure><a href="https://shadybin.dev/registry/github.com/miradorlabs/terma-cli/"><img src="https://img.shields.io/endpoint?url=https://shadybin.dev/registry/github.com/miradorlabs/terma-cli/badge.json" alt="terma's badge"></a><figcaption>terma</figcaption></figure>
+        <figure><a href="https://shadybin.dev/registry/github.com/jespern/marlin/"><img src="https://img.shields.io/endpoint?url=https://shadybin.dev/registry/github.com/jespern/marlin/badge.json" alt="marlin's badge"></a><figcaption>marlin</figcaption></figure>
+      </div>
+    </div>
+
+    <section>
+      <div class="wrap">
+        <h2>Three checks, no people</h2>
+        <p class="lede">Every release goes through the same three steps. The verdict follows from them by a fixed rule, and anyone can rerun the rule from the registry.</p>
+        <div class="steps">
+          <div class="step">
+            <h3>Rebuild</h3>
+            <p>The release is rebuilt from its git tag, on the same kinds of runners the vendor uses. Every file must come out the same as the published one, so the source that gets reviewed is the source that was shipped.</p>
+          </div>
+          <div class="step">
+            <h3>Review</h3>
+            <p>Claude reads all of the vendor's own code. For third-party code it reviews every new version's diff, and the parts of new dependencies a supply-chain attack would use. Packages are checked against their repositories for xz-style extra files.</p>
+          </div>
+          <div class="step">
+            <h3>Sign</h3>
+            <p>The verdict, certified or rejected, is signed and committed to a public registry. The badge always names the project's latest release, so a release nobody certified can't hide behind an old green one.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap split">
+        <div>
+          <h2>The badge</h2>
+          <p class="lede" style="margin-bottom:1.25rem">It names the release users are getting now, whatever shadybin made of it.</p>
+          <table>
+            <tr><td>Rebuilt, reviewed, nothing shady</td><td><span class="pill green">v1.2.0 not shady</span></td></tr>
+            <tr><td>Rebuilt, but failed review</td><td><span class="pill red">v1.2.0 shady</span></td></tr>
+            <tr><td>Released under a day ago, not yet signed</td><td><span class="pill grey">v1.2.0 pending</span></td></tr>
+            <tr><td>Never certified</td><td><span class="pill orange">v1.2.0 not certified</span></td></tr>
+          </table>
+        </div>
+        <div>
+          <h2>The vendor pays</h2>
+          <p>Certification runs in the vendor's own release workflow, on its GitHub Actions minutes and its Claude API key. shadybin runs only the registry.</p>
+          <p>Reviews of third-party code are cached and signed, so a popular dependency is reviewed once and the answer is shared with everyone. Each later release costs only its own changes, usually cents.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap split">
+        <div>
+          <h2>Updaters that only install certified releases</h2>
+          <p>An updater that checks the registry before installing only ever updates to certified releases. There are small SDKs for Go, Zig and Rust. Each has shadybin's key built in and passes the same conformance tests.</p>
+          <p><a href="https://github.com/shadybin/shadybin#readme">SDKs and CLI on GitHub</a></p>
+        </div>
+        <pre><code>c := verify.Checker{}
+sum := sha256.Sum256(archive)
+err := c.Check(ctx, "github.com/acme/tool",
+  tag, "tool_Linux_x86_64.tar.gz", sum)
+switch {
+case err == nil:
+  // certified: install it
+case errors.Is(err, verify.ErrPending):
+  // not yet: wait, and ask again
+default:
+  // not certified: don't install
+}</code></pre>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>shadybin · MIT licensed</span>
+      <span><a href="https://github.com/shadybin/registry">Registry</a> · <a href="https://github.com/shadybin/shadybin/blob/main/spec/SPEC.md">Spec</a> · <a href="https://github.com/shadybin/shadybin">GitHub</a></span>
+    </div>
+  </footer>
 </body>
 </html>
