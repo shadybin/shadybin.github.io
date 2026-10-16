@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>The review prompt: shadybin</title>
+  <meta name="description" content="The brief Claude reviews every release's code with, exactly as shadybin sends it.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2314532d'/%3E%3Cpath d='M18 33l9 9 19-20' fill='none' stroke='%23fff' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --ink: #1c1f1a;
+      --muted: #5c6157;
+      --paper: #fbfaf6;
+      --card: #ffffff;
+      --line: #e6e3da;
+      --green: #14532d;
+      --green-soft: #e8f3ea;
+      --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    html { background: var(--paper); }
+    body {
+      margin: 0; color: var(--ink);
+      font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--green); text-underline-offset: 3px; }
+    .wrap { max-width: 56rem; margin: 0 auto; padding: 0 1.5rem; }
+
+    header { padding: 1.5rem 0; }
+    header .wrap { display: flex; align-items: center; justify-content: space-between; }
+    .wordmark { font: 600 1.15rem/1 var(--mono); color: var(--ink); text-decoration: none; letter-spacing: -0.01em; }
+    .wordmark span { color: var(--green); }
+    nav a { color: var(--muted); text-decoration: none; margin-left: 1.5rem; font-size: 0.95rem; }
+    nav a:hover { color: var(--ink); }
+
+    .hero { padding: 4.5rem 1.5rem 3.5rem; }
+    .hero h1 { font-size: clamp(2.1rem, 5vw, 3.4rem); line-height: 1.08; letter-spacing: -0.035em; margin: 0 0 1.25rem; }
+    @media (min-width: 46rem) { .hero h1 { white-space: nowrap; } }
+    .hero p { font-size: 1.2rem; color: var(--muted); max-width: 38rem; margin: 0 0 2rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+    .button { display: inline-block; padding: 0.7rem 1.15rem; border-radius: 10px; font-weight: 600; font-size: 0.98rem; text-decoration: none; }
+    .button.primary { background: var(--green); color: #fff; }
+    .button.primary:hover { background: #0f4224; }
+    .button.secondary { background: var(--card); color: var(--ink); border: 1px solid var(--line); }
+    .button.secondary:hover { border-color: #cfcabd; }
+
+    .badges { margin-top: 2.75rem; display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; color: var(--muted); font-size: 0.9rem; }
+    .badges figure { margin: 0; display: flex; align-items: center; gap: 0.6rem; }
+    .badges img { height: 20px; }
+
+    section { padding: 3.5rem 0; border-top: 1px solid var(--line); }
+    h2 { font-size: 1.6rem; letter-spacing: -0.02em; margin: 0 0 0.5rem; }
+    .lede { color: var(--muted); margin: 0 0 2rem; max-width: 40rem; }
+
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem; counter-reset: step; }
+    .step { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 1.4rem 1.4rem 1.2rem; }
+    .step::before { counter-increment: step; content: counter(step); display: inline-grid; place-items: center; width: 1.9rem; height: 1.9rem; border-radius: 50%; background: var(--green-soft); color: var(--green); font-weight: 700; font-size: 0.95rem; margin-bottom: 0.9rem; }
+    .step h3 { margin: 0 0 0.4rem; font-size: 1.1rem; }
+    .step p { margin: 0; color: var(--muted); font-size: 0.97rem; }
+
+    .split { display: grid; grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); gap: 2.5rem; align-items: start; }
+    .split h3 { margin: 0 0 0.4rem; font-size: 1.1rem; }
+    .split p { margin: 0 0 0.8rem; color: var(--muted); }
+
+    table { border-collapse: collapse; width: 100%; font-size: 0.95rem; background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+    td { padding: 0.7rem 1rem; border-top: 1px solid var(--line); vertical-align: middle; }
+    tr:first-child td { border-top: 0; }
+    td:first-child { color: var(--muted); width: 55%; }
+    .pill { display: inline-block; font: 600 0.8rem/1 var(--mono); padding: 0.35rem 0.55rem; border-radius: 6px; white-space: nowrap; }
+    .pill.green { background: #dcfce7; color: #14532d; }
+    .pill.red { background: #fee2e2; color: #991b1b; }
+    .pill.grey { background: #ececeb; color: #4b4b48; }
+    .pill.orange { background: #ffedd5; color: #9a3412; }
+
+    pre { background: #f3f1ea; border: 1px solid var(--line); border-radius: 12px; padding: 1rem 1.1rem; overflow-x: auto; font: 0.86rem/1.55 var(--mono); margin: 0; }
+    code { font-family: var(--mono); font-size: 0.9em; }
+    p code { background: #f0eee6; padding: 0.1em 0.35em; border-radius: 5px; }
+
+    footer { border-top: 1px solid var(--line); padding: 2rem 0 3rem; color: var(--muted); font-size: 0.9rem; }
+    footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; }
+    footer a { color: var(--muted); }
+  </style>
+  <style>
+    .prompt { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 1.5rem 1.6rem; white-space: pre-wrap; font: 0.93rem/1.7 var(--mono); color: var(--ink); margin: 0; }
+    .meta { color: var(--muted); font-size: 0.95rem; margin: 0 0 1.5rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="wordmark" href="/">shady<span>bin</span></a>
+      <nav>
+        <a href="/registry/">Registry</a>
+        <a href="/review-prompt/">Review prompt</a>
+        <a href="https://github.com/shadybin/shadybin/blob/main/spec/SPEC.md">Spec</a>
+        <a href="https://github.com/shadybin/shadybin">GitHub</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <div class="wrap" style="padding-top:2.5rem;padding-bottom:4rem">
+      <h1 style="font-size:2.2rem;letter-spacing:-0.03em;margin:0 0 0.6rem">The review prompt</h1>
+      <p class="lede" style="margin-bottom:1rem">This is the brief Claude reviews every release with, exactly as shadybin sends it, loaded live from <a href="https://github.com/shadybin/shadybin/blob/main/internal/review/prompt.txt">its source</a>. The code under review follows it in each request, between digest-carrying markers, and the answer comes back as structured findings.</p>
+      <p class="meta">A verdict doesn't rest on this text alone. It follows by a fixed rule from the answers: a unit that fails, a malicious finding, or a capability left unexplained rejects the release. See <a href="https://github.com/shadybin/shadybin/blob/main/spec/SPEC.md#deciding">Deciding</a> in the spec.</p>
+      <pre class="prompt" id="prompt">Loading the prompt from GitHub…</pre>
+      <noscript><p class="meta">Without JavaScript, read it on <a href="https://github.com/shadybin/shadybin/blob/main/internal/review/prompt.txt">GitHub</a>.</p></noscript>
+    </div>
+  </main>
+  <footer>
+    <div class="wrap">
+      <span>shadybin · MIT licensed</span>
+      <span><a href="/registry/">Registry</a> · <a href="/review-prompt/">Review prompt</a> · <a href="https://github.com/shadybin/shadybin/blob/main/spec/SPEC.md">Spec</a> · <a href="https://github.com/shadybin/shadybin">GitHub</a></span>
+    </div>
+  </footer>
+  <script>
+    fetch("https://raw.githubusercontent.com/shadybin/shadybin/main/internal/review/prompt.txt")
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+      .then(t => { document.getElementById("prompt").textContent = t; })
+      .catch(() => { document.getElementById("prompt").innerHTML = 'Could not load it: read it on <a href="https://github.com/shadybin/shadybin/blob/main/internal/review/prompt.txt">GitHub</a>.'; });
+  </script>
+</body>
+</html>

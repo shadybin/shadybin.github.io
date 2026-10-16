@@ -36,7 +36,8 @@
     nav a:hover { color: var(--ink); }
 
     .hero { padding: 4.5rem 1.5rem 3.5rem; }
-    .hero h1 { font-size: clamp(2.3rem, 5.5vw, 3.6rem); line-height: 1.08; letter-spacing: -0.035em; margin: 0 0 1.25rem; max-width: 14ch; }
+    .hero h1 { font-size: clamp(2.1rem, 5vw, 3.4rem); line-height: 1.08; letter-spacing: -0.035em; margin: 0 0 1.25rem; }
+    @media (min-width: 46rem) { .hero h1 { white-space: nowrap; } }
     .hero p { font-size: 1.2rem; color: var(--muted); max-width: 38rem; margin: 0 0 2rem; }
     .actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
     .button { display: inline-block; padding: 0.7rem 1.15rem; border-radius: 10px; font-weight: 600; font-size: 0.98rem; text-decoration: none; }
@@ -87,7 +88,8 @@
     <div class="wrap">
       <a class="wordmark" href="/">shady<span>bin</span></a>
       <nav>
-        <a href="https://github.com/shadybin/registry">Registry</a>
+        <a href="/registry/">Registry</a>
+        <a href="/review-prompt/">Review prompt</a>
         <a href="https://github.com/shadybin/shadybin/blob/main/spec/SPEC.md">Spec</a>
         <a href="https://github.com/shadybin/shadybin">GitHub</a>
       </nav>
@@ -119,7 +121,7 @@
           </div>
           <div class="step">
             <h3>Review</h3>
-            <p>Claude reads all of the vendor's own code. For third-party code it reviews every new version's diff, and the parts of new dependencies a supply-chain attack would use. Packages are checked against their repositories for xz-style extra files.</p>
+            <p>Claude reads all of the vendor's own code. For third-party code it reviews every new version's diff, and the parts of new dependencies a supply-chain attack would use. Packages are checked against their repositories for xz-style extra files. <a href="/review-prompt/">Read the prompt.</a></p>
           </div>
           <div class="step">
             <h3>Sign</h3>
@@ -175,7 +177,7 @@ default:
   <footer>
     <div class="wrap">
       <span>shadybin · MIT licensed</span>
-      <span><a href="https://github.com/shadybin/registry">Registry</a> · <a href="https://github.com/shadybin/shadybin/blob/main/spec/SPEC.md">Spec</a> · <a href="https://github.com/shadybin/shadybin">GitHub</a></span>
+      <span><a href="/registry/">Registry</a> · <a href="/review-prompt/">Review prompt</a> · <a href="https://github.com/shadybin/shadybin/blob/main/spec/SPEC.md">Spec</a> · <a href="https://github.com/shadybin/shadybin">GitHub</a></span>
     </div>
   </footer>
 </body>
